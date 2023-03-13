@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { Form, Label, Input, FormBtn } from './ContactForm.styled';
-import PropTypes from 'prop-types';
-
-export function ContactForm({ onSubmit }) {
+import { useDispatch, useSelector } from 'react-redux';
+import { addContacts } from 'redux/contactSlice';
+import { nanoid } from 'nanoid';
+import { getContacts } from 'redux/selectors';
+export function ContactForm() {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
+  const dispatch = useDispatch();
+  const contacts = useSelector(getContacts);
   const handleInputChange = event => {
     const { name, value } = event.currentTarget;
     switch (name) {
@@ -18,15 +22,28 @@ export function ContactForm({ onSubmit }) {
         return;
     }
   };
-
-  const handleSubmit = event => {
-    const state = { name, number };
+  const onFormSubmitContacts = event => {
     event.preventDefault();
-    onSubmit(state);
+    const contactItems = {
+      name,
+      id: nanoid(),
+      number,
+    };
+    const checkName = contacts.map(({ name }) => {
+      return name;
+    });
+
+    if (checkName[0] === name) {
+      alert(`${checkName[0]} is already in contacts`);
+    } else {
+      dispatch(addContacts(contactItems));
+      setName('');
+      setNumber('');
+    }
   };
 
   return (
-    <Form onSubmit={handleSubmit}>
+    <Form onSubmit={onFormSubmitContacts}>
       <Label>
         Name
         <Input
@@ -55,7 +72,3 @@ export function ContactForm({ onSubmit }) {
     </Form>
   );
 }
-
-ContactForm.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-};
